@@ -21,8 +21,7 @@
     "be:dev": "npm run start:dev -w=@demo/backend",
     "be:build": "npm run build -w=@demo/backend",
     "be:start": "npm run start:prod -w=@demo/backend",
-    "be:test:ci": "npm run test:ci -w=@demo/backend",
-    "prepare": "husky install"
+    "be:test:ci": "npm run test:ci -w=@demo/backend"
   },
   "devDependencies": {
     "typescript": "4.6.3"
