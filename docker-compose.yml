@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:14.2-alpine    
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: jest-jwt
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    healthcheck:
+      test: 'pg_isready -U postgres -d jest-jwt'
+      interval: 1s
+      retries: 5
+
+volumes:
+  postgresql_data:

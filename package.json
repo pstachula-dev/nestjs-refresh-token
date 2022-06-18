@@ -3,25 +3,11 @@
   "workspaces": [
     "apps/*"
   ],
-  "engines": {
-    "node": ">=16",
-    "pnpm": ">=6"
-  },
   "private": true,
   "scripts": {
-    "reinstall": "rimraf ./**/node_modules && rimraf ./**/.next && rimraf ./**/.dist && pnpm i",
-    "tsc": "pnpm -r --parallel run tsc",
-    "lint": "pnpm -r --parallel run lint",
     "fe:dev": "npm run dev -w=@demo/frontend",
-    "fe:build": "npm run build -w=@demo/frontend",
-    "fe": "npm run start -w=@demo/frontend",
-    "fe:test:ci": "npm run test:ci -w=@demo/frontend",
-    "be:generate": "npm run generate -w=@demo/backend",
-    "be:lint": "npm run lint -w=@demo/backend",
     "be:dev": "npm run start:dev -w=@demo/backend",
-    "be:build": "npm run build -w=@demo/backend",
-    "be:start": "npm run start:prod -w=@demo/backend",
-    "be:test:ci": "npm run test:ci -w=@demo/backend"
+    "be:prisma:migrate": "cd apps/backend && npx prisma migrate dev"
   },
   "devDependencies": {
     "typescript": "4.6.3"

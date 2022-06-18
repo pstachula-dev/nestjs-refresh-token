@@ -7,8 +7,9 @@ import {
   UseGuards,
   Req,
   Res,
+  Get,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { ONE_DAY_MS } from './common/constants';
 import { GetCurrentUser } from './common/decorators/get-current-user.decorator';
@@ -18,17 +19,37 @@ import { AuthDto } from './dto/auth.dto';
 import { JwtPayload } from './strategies/at.strategy';
 import { Tokens } from './types/auth.types';
 
+const authCookieOptions: CookieOptions = {
+  httpOnly: true,
+  maxAge: 7 * ONE_DAY_MS,
+  secure: true,
+  sameSite: 'none',
+};
+
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('local/signin')
+  @UseGuards(JwtAtAuthGuard)
+  @Get('protected')
   @HttpCode(HttpStatus.OK)
-  signinLocal(@Body() dto: AuthDto): Promise<Tokens> {
-    return this.authService.signinLocal(dto);
+  async getProtected() {
+    return ['I', 'am', 'protected'];
   }
 
-  @Post('local/signup')
+  @Post('signin')
+  @HttpCode(HttpStatus.OK)
+  async signinLocal(
+    @Body() dto: AuthDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<Tokens> {
+    const tokens = await this.authService.signinLocal(dto);
+    res.cookie('RefreshToken', tokens['refreshToken'], authCookieOptions);
+
+    return tokens;
+  }
+
+  @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   signupLocal(@Body() dto: AuthDto): Promise<Tokens> {
     return this.authService.signupLocal(dto);
@@ -41,24 +62,24 @@ export class AuthController {
     @GetCurrentUser() user: JwtPayload,
     @Res({ passthrough: true }) res: Response,
   ) {
-    res.cookie('RefreshToken', null);
+    res.clearCookie('RefreshToken');
     return this.authService.logout(user.sub);
   }
 
   @UseGuards(JwtRtAuthGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refreshTokens(
+  async refreshTokens(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
     const user = req.user;
+    const tokens = await this.authService.refreshTokens(
+      user['email'],
+      user['refreshToken'],
+    );
+    res.cookie('RefreshToken', tokens['refreshToken'], authCookieOptions);
 
-    res.cookie('RefreshToken', user['refreshToken'], {
-      httpOnly: true,
-      maxAge: 7 * ONE_DAY_MS,
-    });
-
-    return this.authService.refreshTokens(user['email'], user['refreshToken']);
+    return tokens;
   }
 }
