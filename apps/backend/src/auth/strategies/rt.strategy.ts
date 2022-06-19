@@ -13,11 +13,8 @@ export type JwtPayload = {
 export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(private configService: ConfigService) {
     super({
-      // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (req: Request) => {
-          return req?.cookies?.RefreshToken;
-        },
+        (req: Request) => req?.cookies?.RefreshToken,
       ]),
       secretOrKey: configService.get('REFRESH_TOKEN_SECRET'),
       passReqToCallback: true,

@@ -3,15 +3,19 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
-import { accessToken, getProtected, postLogout, postRefresh, postSignIn, postSignUp } from './modules/auth/auth'
+import { accessToken, getCSRF, getProtected, postLogout, postRefresh, postSignIn, postSignUp } from './modules/auth/auth'
 
 const Home: NextPage = () => {
   const [state, setState] = useState([]);
   const [authToken, setAuthToken] = useState(null);
 
   useEffect(() => {
-    postRefresh().then(body => {
+    getCSRF();
+    
+    postRefresh().then(body => {          
       setAuthToken(body.data.accessToken)
+    }).catch(e => {
+      console.log(11, e);
     })
   }, [])
   

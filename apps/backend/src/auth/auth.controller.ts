@@ -30,11 +30,17 @@ const authCookieOptions: CookieOptions = {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Get('csrf')
+  @HttpCode(HttpStatus.OK)
+  async getCSRF(@Req() req: Request) {
+    return { csrf: req.csrfToken() };
+  }
+
   @UseGuards(JwtAtAuthGuard)
   @Get('protected')
   @HttpCode(HttpStatus.OK)
   async getProtected() {
-    return ['I', 'am', 'protected'];
+    return ['xD'];
   }
 
   @Post('signin')

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import Cookies from 'js-cookie';
 
 const BASE_URL = 'http://localhost:4000';
 
@@ -8,6 +9,7 @@ const enum AuthApi {
   logout = '/auth/logout',
   refresh = '/auth/refresh',
   protected = '/auth/protected',
+  csrf = '/auth/csrf',
 }
 
 export let accessToken = '';
@@ -22,12 +24,19 @@ apiClient.interceptors.request.use((config) => {
     headers: {
       ...config.headers,
       Authorization: `Bearer ${accessToken}`,
+      'XSRF-TOKEN': Cookies.get('X-CSRF')
     }
   }
 }, (error) => {
   console.error(error);
   return Promise.reject(error);
 });
+
+export const getCSRF = () => {
+  return apiClient.get(AuthApi.csrf, {
+    withCredentials: true
+  })
+}
 
 export const postSignUp = (data?: any) => {
   return apiClient.post(AuthApi.signup, data)
