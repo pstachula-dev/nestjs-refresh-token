@@ -21,6 +21,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {    
   return {
     ...config,
+    withCredentials: true,
     headers: {
       ...config.headers,
       Authorization: `Bearer ${accessToken}`,
@@ -33,9 +34,7 @@ apiClient.interceptors.request.use((config) => {
 });
 
 export const getCSRF = () => {
-  return apiClient.get(AuthApi.csrf, {
-    withCredentials: true
-  })
+  return apiClient.get(AuthApi.csrf)
 }
 
 export const postSignUp = (data?: any) => {
@@ -43,9 +42,7 @@ export const postSignUp = (data?: any) => {
 }
 
 export const postSignIn = async (data?: any) => {
-  const body = await apiClient.post(AuthApi.signin, data, {
-    withCredentials: true
-  });
+  const body = await apiClient.post(AuthApi.signin, data);
   accessToken = body.data.accessToken;
 
   return body;
@@ -58,15 +55,11 @@ export const postLogout = (data?: any) => {
 }
 
 export const postRefresh = async (data?: any) => {
-  const body = await apiClient.post(AuthApi.refresh, data, {
-    withCredentials: true,
-  });
+  const body = await apiClient.post(AuthApi.refresh, data);
   accessToken = body.data.accessToken;
   return body;
 }
 
 export const getProtected = () => {
-  return apiClient.get(AuthApi.protected, {
-    withCredentials: true,
-  })
+  return apiClient.get(AuthApi.protected)
 }

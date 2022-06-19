@@ -40,7 +40,7 @@ export class AuthController {
   @Get('protected')
   @HttpCode(HttpStatus.OK)
   async getProtected() {
-    return ['xD'];
+    return ['PROTECTED', 'DATA!!!'];
   }
 
   @Post('signin')

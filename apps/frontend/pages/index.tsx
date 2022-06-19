@@ -6,17 +6,16 @@ import styles from '../styles/Home.module.css'
 import { accessToken, getCSRF, getProtected, postLogout, postRefresh, postSignIn, postSignUp } from './modules/auth/auth'
 
 const Home: NextPage = () => {
-  const [state, setState] = useState([]);
+  const [state, setState] = useState<string[]>([]);
   const [authToken, setAuthToken] = useState(null);
 
   useEffect(() => {
-    getCSRF();
-    
-    postRefresh().then(body => {          
-      setAuthToken(body.data.accessToken)
-    }).catch(e => {
-      console.log(11, e);
-    })
+    const asyncCalls = async () =>{
+      await getCSRF();
+      const body = await postRefresh();
+      setAuthToken(body.data.accessToken);
+    }
+    asyncCalls()
   }, [])
   
   return (
@@ -28,7 +27,9 @@ const Home: NextPage = () => {
       </Head>
 
       <main>
-        <h1>Auth App: {authToken}</h1>
+        <h1 style={{ color:  authToken ? 'green' : 'red '}}>
+          Is logged: {(!!authToken).toString()}
+        </h1>
 
         <button onClick={() => {
           postSignUp({
@@ -57,8 +58,12 @@ const Home: NextPage = () => {
         }}>RefreshToken</button>
 
         <button onClick={async () => {
-          const body = await getProtected();
-          setState(body.data);
+          try {
+            const body = await getProtected();
+            setState(body.data);
+          } catch (error) {
+            setState(['missing', 'access', 'token']);
+          }
         }}>Protected</button>
 
         <ul>
