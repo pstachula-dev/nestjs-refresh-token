@@ -15,18 +15,18 @@ async function bootstrap() {
 
   app.enableCors({
     credentials: true,
-    origin: process.env.CORS_HOST,
-    methods: ['POST'],
+    origin: [process.env.CORS_HOST, 'http://jwt:3000'],
+    methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS',
   });
 
-  app.use(
-    csrf({
-      cookie: true,
-      ignoreMethods: ['GET'],
-    }),
-  );
+  // app.use(
+  //   csrf({
+  //     cookie: true,
+  //     ignoreMethods: ['GET'],
+  //   }),
+  // );
 
-  app.use(csrfMiddleware);
+  // app.use(csrfMiddleware);
 
   await app.listen(4000);
 }

@@ -16,14 +16,21 @@ export class AuthService {
   ) {}
 
   async signupLocal(dto: AuthDto): Promise<Tokens> {
-    const newUser = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        hash: await argon2.hash(dto.password),
-      },
+    const user = await this.prisma.user.findFirst({
+      where: { email: dto.email },
     });
 
-    return this.updateRefreshToken(newUser.id, newUser.email);
+    if (!user) {
+      const newUser = await this.prisma.user.create({
+        data: {
+          email: dto.email,
+          hash: await argon2.hash(dto.password),
+        },
+      });
+      return this.updateRefreshToken(newUser.id, newUser.email);
+    }
+
+    return this.updateRefreshToken(user.id, user.email);
   }
 
   async signinLocal(dto: AuthDto): Promise<Tokens> {

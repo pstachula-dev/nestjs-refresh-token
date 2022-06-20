@@ -3,7 +3,8 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
-import { accessToken, getCSRF, getProtected, postLogout, postRefresh, postSignIn, postSignUp } from './modules/auth/auth'
+import { accessToken, getCSRF, getSignUpGithub, getProtected, postLogout, postRefresh, postSignIn, postSignUp } from '../modules/auth/auth'
+import { useSession, signIn, signOut } from "next-auth/react"
 
 const Home: NextPage = () => {
   const [state, setState] = useState<string[]>([]);
@@ -31,12 +32,20 @@ const Home: NextPage = () => {
           Is logged: {(!!authToken).toString()}
         </h1>
 
+        <hr />
+
+        <a href="http://localhost:4000/auth/github">Github signIn</a>
+
+        {/* <button onClick={() => {
+          getSignUpGithub();
+        }}>Sign Up Github</button> */}
+
         <button onClick={() => {
           postSignUp({
             "email": "test@gmail.pl",
             "password": "pass"
           });
-        }}>Sign Up</button>
+        }}>Sign Up Email</button>
 
         
         <button onClick={async () => {

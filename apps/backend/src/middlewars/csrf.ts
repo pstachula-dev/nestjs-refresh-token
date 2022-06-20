@@ -5,6 +5,6 @@ export function csrfMiddleware(
   res: Response,
   next: NextFunction,
 ) {
-  res.cookie('X-CSRF', req.csrfToken());
+  res.cookie('X-CSRF', req.csrfToken(), {});
   next();
 }

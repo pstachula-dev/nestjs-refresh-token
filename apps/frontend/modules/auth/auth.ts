@@ -1,5 +1,6 @@
 import axios from 'axios'
 import Cookies from 'js-cookie';
+import jwt from 'jsonwebtoken'
 
 const BASE_URL = 'http://localhost:4000';
 
@@ -10,6 +11,7 @@ const enum AuthApi {
   refresh = '/auth/refresh',
   protected = '/auth/protected',
   csrf = '/auth/csrf',
+  github = '/auth/github',
 }
 
 export let accessToken = '';
@@ -25,7 +27,7 @@ apiClient.interceptors.request.use((config) => {
     headers: {
       ...config.headers,
       Authorization: `Bearer ${accessToken}`,
-      'XSRF-TOKEN': Cookies.get('X-CSRF')
+      'XSRF-TOKEN': Cookies.get('X-CSRF') || ''
     }
   }
 }, (error) => {
@@ -57,9 +59,15 @@ export const postLogout = (data?: any) => {
 export const postRefresh = async (data?: any) => {
   const body = await apiClient.post(AuthApi.refresh, data);
   accessToken = body.data.accessToken;
+  console.log(jwt.decode(accessToken));
   return body;
 }
 
 export const getProtected = () => {
   return apiClient.get(AuthApi.protected)
+}
+
+export const getSignUpGithub = () => {
+  return apiClient.get(AuthApi.github, {
+  })
 }

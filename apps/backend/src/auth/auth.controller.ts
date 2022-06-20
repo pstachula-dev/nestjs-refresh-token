@@ -8,7 +8,10 @@ import {
   Req,
   Res,
   Get,
+  Header,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { randomUUID } from 'crypto';
 import { CookieOptions, Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { ONE_DAY_MS } from './common/constants';
@@ -18,6 +21,7 @@ import { JwtRtAuthGuard } from './common/guards/rt.guard';
 import { AuthDto } from './dto/auth.dto';
 import { JwtPayload } from './strategies/at.strategy';
 import { Tokens } from './types/auth.types';
+import * as argon2 from 'argon2';
 
 const authCookieOptions: CookieOptions = {
   httpOnly: true,
@@ -30,10 +34,35 @@ const authCookieOptions: CookieOptions = {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  @HttpCode(HttpStatus.OK)
+  async getGithub(@Req() req: Request) {
+    return req;
+  }
+
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  async getGithubCallback(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const profile = req.user['profile'];
+
+    const tokens = await this.authService.signupLocal({
+      email: profile.emails.at(0).value,
+      password: await argon2.hash(randomUUID()),
+    });
+
+    res.cookie('RefreshToken', tokens['refreshToken'], authCookieOptions);
+
+    return res.redirect('http://localhost:3000');
+  }
+
   @Get('csrf')
   @HttpCode(HttpStatus.OK)
   async getCSRF(@Req() req: Request) {
-    return { csrf: req.csrfToken() };
+    return true;
   }
 
   @UseGuards(JwtAtAuthGuard)
