@@ -34,11 +34,9 @@ const Home: NextPage = () => {
 
         <hr />
 
-        <a href="http://localhost:4000/auth/github">Github signIn</a>
-
-        {/* <button onClick={() => {
-          getSignUpGithub();
-        }}>Sign Up Github</button> */}
+        <a href="http://localhost:4000/auth/github">
+          <button>Github signIn</button>
+        </a>
 
         <button onClick={() => {
           postSignUp({

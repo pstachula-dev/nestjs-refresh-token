@@ -1,4 +1,14 @@
-# How to:
+# Description:
+### Frontend: Next.js
+### API: Nest.js
+
+### Features
+- JWT with refresh token rotation
+- SSO github
+- CSRF and XSS protection
+- communication FE <-> BE
+
+## How to run:
 
 Requirements:
 - nodejs16+
