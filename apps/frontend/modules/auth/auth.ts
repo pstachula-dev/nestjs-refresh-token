@@ -20,13 +20,13 @@ const apiClient = axios.create({
   baseURL: BASE_URL
 });
 
-apiClient.interceptors.request.use((config) => {    
+apiClient.interceptors.request.use((config) => {   
   return {
     ...config,
     withCredentials: true,
     headers: {
       ...config.headers,
-      Authorization: `Bearer ${accessToken}`,
+      // Authorization: `Bearer ${accessToken}`,
       'XSRF-TOKEN': Cookies.get('X-CSRF') || ''
     }
   }
@@ -56,8 +56,8 @@ export const postLogout = (data?: any) => {
   })
 }
 
-export const postRefresh = async (data?: any) => {
-  const body = await apiClient.post(AuthApi.refresh, data);
+export const postRefresh = async (data?: any, opts?: any) => {
+  const body = await apiClient.post(AuthApi.refresh, data, opts);
   accessToken = body.data.accessToken;
   console.log(jwt.decode(accessToken));
   return body;

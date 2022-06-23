@@ -112,4 +112,8 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
+
+  async getUser() {
+    return this.prisma.user.findFirst();
+  }
 }

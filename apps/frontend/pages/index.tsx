@@ -1,20 +1,24 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import Image from 'next/image'
+import cookie from 'cookie'
+import nookies from 'nookies'
 import { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 import { accessToken, getCSRF, getSignUpGithub, getProtected, postLogout, postRefresh, postSignIn, postSignUp } from '../modules/auth/auth'
 import { useSession, signIn, signOut } from "next-auth/react"
+import jsonwebtoken from 'jsonwebtoken'
 
-const Home: NextPage = () => {
+const Home: NextPage<{data:any, authorized:any}> = ({ data, authorized }) => {
   const [state, setState] = useState<string[]>([]);
   const [authToken, setAuthToken] = useState(null);
+
+  console.log(33, data, authorized);
 
   useEffect(() => {
     const asyncCalls = async () =>{
       await getCSRF();
-      const body = await postRefresh();
-      setAuthToken(body.data.accessToken);
+      // const body = await postRefresh();
+      // setAuthToken(body.data.accessToken);
     }
     asyncCalls()
   }, [])
@@ -28,7 +32,7 @@ const Home: NextPage = () => {
       </Head>
 
       <main>
-        <h1 style={{ color:  authToken ? 'green' : 'red '}}>
+        <h1 style={{ color:  authorized ? 'green' : 'red '}}>
           Is logged: {(!!authToken).toString()}
         </h1>
 
@@ -80,6 +84,40 @@ const Home: NextPage = () => {
       </main>
     </div>
   )
+}
+
+export async function getServerSideProps(context: any) {
+  const cookies = nookies.get(context)
+  // assuming you use the 'cookie' npm package
+ // and you did not sign the cookie on NestJS with a secret so it has a raw value
+  const cookies2 = cookie.parse(context.req.headers.cookie)
+
+  const token = cookies2.RefreshToken // assuming you named the cookie 'token' when you set it on your NestJS server
+
+  let response;
+  
+  try {
+    response = await postRefresh(null, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+    }});
+  } catch (error) {
+    console.log(error);
+  }
+  const authorized = response?.status !== 401
+
+  console.log(response?.data);
+
+  console.log(cookies);
+
+  nookies.set(context, 'RefreshToken', response?.data?.refreshToken)
+
+  return {
+        props: { 
+          data: jsonwebtoken.decode(response?.data?.refreshToken) || null,
+          authorized,
+        }
+     }
 }
 
 export default Home

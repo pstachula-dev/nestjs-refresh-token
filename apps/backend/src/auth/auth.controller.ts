@@ -34,11 +34,10 @@ const authCookieOptions: CookieOptions = {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Get('github')
-  @UseGuards(AuthGuard('github'))
+  @Get('user')
   @HttpCode(HttpStatus.OK)
   async getGithub(@Req() req: Request) {
-    return req;
+    return this.authService.getUser();
   }
 
   @Get('github/callback')
