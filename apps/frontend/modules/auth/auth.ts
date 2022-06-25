@@ -1,7 +1,5 @@
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
-
-const BASE_URL = "http://localhost:4000";
 
 const enum AuthApi {
   signin = "/auth/signin",
@@ -13,8 +11,13 @@ const enum AuthApi {
   user = "/auth/user",
 }
 
+export type UserPayload = {
+  password: string;
+  email: string;
+};
+
 export const apiClient = axios.create({
-  baseURL: BASE_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
 });
 
 const setAuthorizationHeader = (token: string) => {
@@ -27,7 +30,6 @@ apiClient.interceptors.request.use(
       ...config,
       headers: {
         ...config.headers,
-        "XSRF-TOKEN": Cookies.get("X-CSRF") || "",
       },
     };
   },
@@ -57,11 +59,11 @@ export const getCSRF = () => {
   return apiClient.get(AuthApi.csrf);
 };
 
-export const postSignUp = (data?: any) => {
+export const postSignUp = (data?: UserPayload) => {
   return apiClient.post(AuthApi.signup, data);
 };
 
-export const postSignIn = async (data?: any) => {
+export const postSignIn = async (data?: UserPayload) => {
   const body = await apiClient.post(AuthApi.signin, data, {
     withCredentials: true,
   });
@@ -69,19 +71,15 @@ export const postSignIn = async (data?: any) => {
   return body;
 };
 
-export const postLogout = (data?: any) => {
-  return apiClient.post(AuthApi.logout, data).then(() => {
+export const postLogout = () => {
+  return apiClient.post(AuthApi.logout).then(() => {
     setAuthorizationHeader("");
     Cookies.remove("RefreshToken");
   });
 };
 
-export const postRefresh = async (data?: any, config?: any) => {
-  const body = await apiClient.post(
-    AuthApi.refresh,
-    data,
-    config || { withCredentials: true }
-  );
+export const postRefresh = async (config?: AxiosRequestConfig) => {
+  const body = await apiClient.post(AuthApi.refresh, null, config);
   setAuthorizationHeader(body.data.accessToken);
   return body;
 };

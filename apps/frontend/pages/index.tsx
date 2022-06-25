@@ -1,4 +1,4 @@
-import type { NextPage } from "next";
+import type { NextPage, GetServerSideProps } from "next";
 import Head from "next/head";
 import nookies from "nookies";
 import { useState, createContext } from "react";
@@ -13,15 +13,36 @@ import {
 } from "../modules/auth/auth";
 import jsonwebtoken from "jsonwebtoken";
 
-const SessionContext = createContext({});
+const HARDCODED_USER = {
+  email: "test@gmail.pl",
+  password: "pass",
+};
 
-const Home: NextPage<{ user: any; token: any }> = ({ user, token }) => {
+export type User = {
+  id: number;
+  email: string;
+};
+
+const SessionContext = createContext<{
+  user: User | null;
+  isAuth: boolean;
+}>({
+  user: null,
+  isAuth: false,
+});
+
+const Home: NextPage<{ user: User | null; token: string }> = ({
+  user,
+  token,
+}) => {
   const [state, setState] = useState<string[]>([]);
   const [isAuth, setIsAuth] = useState<boolean>(!!token);
 
   if (!apiClient.defaults.headers.common["Authorization"]) {
     apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   }
+
+  console.log({ user, isAuth });
 
   return (
     <SessionContext.Provider value={{ user, isAuth }}>
@@ -42,10 +63,7 @@ const Home: NextPage<{ user: any; token: any }> = ({ user, token }) => {
           </a>
           <button
             onClick={() => {
-              postSignUp({
-                email: "test@gmail.pl",
-                password: "pass",
-              });
+              postSignUp(HARDCODED_USER);
             }}
           >
             Sign Up Email
@@ -53,10 +71,7 @@ const Home: NextPage<{ user: any; token: any }> = ({ user, token }) => {
 
           <button
             onClick={async () => {
-              const body = await postSignIn({
-                email: "test@gmail.pl",
-                password: "pass",
-              });
+              await postSignIn(HARDCODED_USER);
               setIsAuth(true);
             }}
           >
@@ -70,14 +85,6 @@ const Home: NextPage<{ user: any; token: any }> = ({ user, token }) => {
             }}
           >
             Logout
-          </button>
-
-          <button
-            onClick={async () => {
-              const body = await postRefresh();
-            }}
-          >
-            RefreshToken
           </button>
 
           <button
@@ -104,13 +111,13 @@ const Home: NextPage<{ user: any; token: any }> = ({ user, token }) => {
   );
 };
 
-export async function getServerSideProps(context: any) {
-  const { RefreshToken } = nookies.get(context) || {};
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { RefreshToken } = nookies.get(context);
   let user = null;
   let token = "";
 
   try {
-    const res = await postRefresh(null, {
+    const res = await postRefresh({
       headers: {
         Cookie: `RefreshToken=${RefreshToken}`,
       },
@@ -118,10 +125,14 @@ export async function getServerSideProps(context: any) {
 
     token = res?.data?.accessToken;
     nookies.set(context, "RefreshToken", res?.data?.refreshToken);
-    user = jsonwebtoken.decode(res?.data?.refreshToken) || null;
+    user = jsonwebtoken.decode(
+      res?.data?.refreshToken
+    ) as jsonwebtoken.JwtPayload;
   } catch (error) {
     console.error("error refresh token");
   }
+
+  console.log(user);
 
   return {
     props: {
@@ -129,6 +140,6 @@ export async function getServerSideProps(context: any) {
       token,
     },
   };
-}
+};
 
 export default Home;
