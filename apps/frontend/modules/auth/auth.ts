@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
+import Cookies from "js-cookie";
 
 const enum AuthApi {
   signin = "/auth/signin",
@@ -27,8 +28,10 @@ apiClient.interceptors.request.use(
   (config) => {
     return {
       ...config,
+      withCredentials: true,
       headers: {
         ...config.headers,
+        "CSRF-Token": Cookies.get("X-CSRF") || "",
       },
     };
   },
@@ -58,7 +61,7 @@ apiClient.interceptors.response.use(
 );
 
 export const getCSRF = () => {
-  return apiClient.get(AuthApi.csrf);
+  return apiClient.get(AuthApi.csrf, { withCredentials: true });
 };
 
 export const postSignUp = (data?: UserPayload) => {
@@ -80,7 +83,7 @@ export const postLogout = () => {
 };
 
 export const postRefresh = async (config?: AxiosRequestConfig) => {
-  const body = await apiClient.post(AuthApi.refresh, null, {
+  const body = await apiClient.get(AuthApi.refresh, {
     withCredentials: true,
     ...config,
   });
@@ -89,5 +92,5 @@ export const postRefresh = async (config?: AxiosRequestConfig) => {
 };
 
 export const getProtected = () => {
-  return apiClient.get(AuthApi.protected);
+  return apiClient.post(AuthApi.protected);
 };

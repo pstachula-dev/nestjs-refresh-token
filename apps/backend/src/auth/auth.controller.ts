@@ -40,7 +40,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtAtAuthGuard)
-  @Get('protected')
+  @Post('protected')
   @HttpCode(HttpStatus.OK)
   async getProtected() {
     return ['PROTECTED', 'DATA'];
@@ -76,7 +76,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtRtAuthGuard)
-  @Post('refresh')
+  @Get('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshTokens(
     @Req() req: Request,

@@ -2,8 +2,8 @@ import "../styles/globals.css";
 import App, { AppContext, AppProps } from "next/app";
 import nookies from "nookies";
 import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
-import { apiClient, postRefresh } from "../modules/auth/auth";
-import { createContext } from "react";
+import { apiClient, getCSRF, postRefresh } from "../modules/auth/auth";
+import { createContext, useEffect } from "react";
 
 export type User = {
   id: number;
@@ -26,6 +26,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       "Authorization"
     ] = `Bearer ${accessToken}`;
   }
+
+  useEffect(() => {
+    getCSRF();
+  }, []);
 
   return (
     <SessionContext.Provider value={{ user, isAuth }}>
