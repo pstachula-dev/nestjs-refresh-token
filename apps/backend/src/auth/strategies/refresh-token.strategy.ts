@@ -10,7 +10,10 @@ export type JwtPayload = {
 };
 
 @Injectable()
-export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
+export class RefreshTokenStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(private configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -24,12 +27,9 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   }
 
   async validate(req: Request, payload: JwtPayload) {
-    const refreshToken =
-      req.cookies?.RefreshToken || req?.headers?.authorization?.split(' ')?.[1];
-
     return {
       ...payload,
-      refreshToken,
+      refreshToken: req.cookies?.RefreshToken,
     };
   }
 }

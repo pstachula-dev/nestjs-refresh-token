@@ -1,9 +1,9 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import * as cookieParser from 'cookie-parser';
-import * as csrf from 'csurf';
 import helmet from 'helmet';
-import { csrfMiddleware } from './middlewars/csrf';
+// import * as csrf from 'csurf';
+// import { csrfMiddleware } from './middlewars/csrf';
 
 import { AppModule } from './app.module';
 

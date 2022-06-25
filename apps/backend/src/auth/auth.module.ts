@@ -3,14 +3,19 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { AtStrategy } from './strategies/at.strategy';
+import { AccessTokenStrategy } from './strategies/access-token.strategy';
 import { GithubStrategy } from './strategies/github.strategy';
-import { RtStrategy } from './strategies/rt.strategy';
+import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 
 @Module({
   imports: [PassportModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [AuthService, AtStrategy, RtStrategy, GithubStrategy],
+  providers: [
+    AuthService,
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
+    GithubStrategy,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}
