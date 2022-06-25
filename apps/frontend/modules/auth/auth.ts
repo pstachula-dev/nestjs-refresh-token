@@ -41,7 +41,10 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (res) => res,
   async function (error: AxiosError) {
-    if (error?.response?.status === 401) {
+    if (
+      error?.response?.status === 401 &&
+      !error?.response?.request.withCredentials
+    ) {
       const body = await postRefresh();
       return apiClient.request({
         ...error.config,
@@ -79,7 +82,10 @@ export const postLogout = () => {
 };
 
 export const postRefresh = async (config?: AxiosRequestConfig) => {
-  const body = await apiClient.post(AuthApi.refresh, null, config);
+  const body = await apiClient.post(AuthApi.refresh, null, {
+    withCredentials: true,
+    ...config,
+  });
   setAuthorizationHeader(body.data.accessToken);
   return body;
 };
