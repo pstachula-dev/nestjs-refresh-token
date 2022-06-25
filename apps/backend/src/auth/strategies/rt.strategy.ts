@@ -15,10 +15,7 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {
-          return (
-            req?.cookies?.RefreshToken ||
-            req?.headers?.authorization.split(' ')[1]
-          );
+          return req?.cookies?.RefreshToken;
         },
       ]),
       secretOrKey: configService.get('REFRESH_TOKEN_SECRET'),

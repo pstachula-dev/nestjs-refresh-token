@@ -1,29 +1,23 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import cookie from 'cookie'
 import nookies from 'nookies'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, createContext, useReducer } from 'react'
 import styles from '../styles/Home.module.css'
-import { accessToken, getCSRF, getSignUpGithub, getProtected, postLogout, postRefresh, postSignIn, postSignUp } from '../modules/auth/auth'
-import { useSession, signIn, signOut } from "next-auth/react"
+import { getCSRF, getProtected, postLogout, postRefresh, postSignIn, postSignUp, getUser, apiClient } from '../modules/auth/auth'
 import jsonwebtoken from 'jsonwebtoken'
 
-const Home: NextPage<{data:any, authorized:any}> = ({ data, authorized }) => {
+const SessionContext = createContext({});
+
+const Home: NextPage<{user:any, token :any }> = ({ user, token }) => {
   const [state, setState] = useState<string[]>([]);
-  const [authToken, setAuthToken] = useState(null);
+  const [isAuth, setIsAuth] = useState<boolean>(!!token);
 
-  console.log(33, data, authorized);
+  if (!apiClient.defaults.headers.common['Authorization']) {
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  }
 
-  useEffect(() => {
-    const asyncCalls = async () =>{
-      await getCSRF();
-      // const body = await postRefresh();
-      // setAuthToken(body.data.accessToken);
-    }
-    asyncCalls()
-  }, [])
-  
   return (
+    <SessionContext.Provider value={{ user, isAuth }}>
     <div className={styles.container}>
       <Head>
         <title>Create Next App</title>
@@ -32,16 +26,14 @@ const Home: NextPage<{data:any, authorized:any}> = ({ data, authorized }) => {
       </Head>
 
       <main>
-        <h1 style={{ color:  authorized ? 'green' : 'red '}}>
-          Is logged: {(!!authToken).toString()}
-        </h1>
 
-        <hr />
+        <h1 style={{ color:  isAuth ? 'green' : 'red '}}>
+          Is logged: {(!!isAuth).toString()}
+        </h1>
 
         <a href="http://localhost:4000/auth/github">
           <button>Github signIn</button>
         </a>
-
         <button onClick={() => {
           postSignUp({
             "email": "test@gmail.pl",
@@ -55,17 +47,16 @@ const Home: NextPage<{data:any, authorized:any}> = ({ data, authorized }) => {
             "email": "test@gmail.pl",
             "password": "pass"
           });
-          setAuthToken(body.data.accessToken)
+          setIsAuth(true)
         }}>Login</button>
 
         <button onClick={() => {
           postLogout();
-          setAuthToken(null)
+          setIsAuth(false)
         }}>Logout</button>
 
         <button onClick={async () => {
           const body = await postRefresh();
-          setAuthToken(body.data.accessToken)
         }}>RefreshToken</button>
 
         <button onClick={async () => {
@@ -83,41 +74,35 @@ const Home: NextPage<{data:any, authorized:any}> = ({ data, authorized }) => {
         
       </main>
     </div>
+    </SessionContext.Provider>
   )
 }
 
 export async function getServerSideProps(context: any) {
-  const cookies = nookies.get(context)
-  // assuming you use the 'cookie' npm package
- // and you did not sign the cookie on NestJS with a secret so it has a raw value
-  const cookies2 = cookie.parse(context.req.headers.cookie)
-
-  const token = cookies2.RefreshToken // assuming you named the cookie 'token' when you set it on your NestJS server
-
-  let response;
+  const { RefreshToken } = nookies.get(context) || {};
+  let user = null;
+  let token = '';
   
   try {
-    response = await postRefresh(null, {
+    const res = await postRefresh(null, {
       headers: {
-        'Authorization': `Bearer ${token}`
-    }});
+        Cookie: `RefreshToken=${RefreshToken}`
+      }
+    });
+    
+    token = res?.data?.accessToken;
+    nookies.set(context, 'RefreshToken', res?.data?.refreshToken);
+    user = jsonwebtoken.decode(res?.data?.refreshToken) || null;
   } catch (error) {
-    console.log(error);
+    console.error('error refresh token');
   }
-  const authorized = response?.status !== 401
-
-  console.log(response?.data);
-
-  console.log(cookies);
-
-  nookies.set(context, 'RefreshToken', response?.data?.refreshToken)
 
   return {
-        props: { 
-          data: jsonwebtoken.decode(response?.data?.refreshToken) || null,
-          authorized,
-        }
-     }
+    props: { 
+      user,
+      token
+    }
+  }
 }
 
 export default Home

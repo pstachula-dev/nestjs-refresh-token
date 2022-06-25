@@ -1,6 +1,5 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import Cookies from 'js-cookie';
-import jwt from 'jsonwebtoken'
 
 const BASE_URL = 'http://localhost:4000';
 
@@ -11,27 +10,40 @@ const enum AuthApi {
   refresh = '/auth/refresh',
   protected = '/auth/protected',
   csrf = '/auth/csrf',
-  github = '/auth/github',
+  user = '/auth/user',
 }
 
-export let accessToken = '';
-
-const apiClient = axios.create({ 
-  baseURL: BASE_URL
+export const apiClient = axios.create({ 
+  baseURL: BASE_URL,  
 });
 
-apiClient.interceptors.request.use((config) => {   
+const setAuthorizationHeader = (token: string) => {
+  apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
+
+apiClient.interceptors.request.use((config) => {     
   return {
     ...config,
-    withCredentials: true,
     headers: {
       ...config.headers,
-      // Authorization: `Bearer ${accessToken}`,
       'XSRF-TOKEN': Cookies.get('X-CSRF') || ''
     }
   }
 }, (error) => {
-  console.error(error);
+  return Promise.reject(error);
+});
+
+apiClient.interceptors.response.use((res) => res, async function (error: AxiosError) {  
+  if (error?.response?.status === 401) {
+    const body = await postRefresh();
+    return apiClient.request({ 
+      ...error.config,  
+      headers: {
+        Authorization: `Bearer ${body.data.accessToken}`
+      }
+    });
+  }
+  
   return Promise.reject(error);
 });
 
@@ -44,22 +56,23 @@ export const postSignUp = (data?: any) => {
 }
 
 export const postSignIn = async (data?: any) => {
-  const body = await apiClient.post(AuthApi.signin, data);
-  accessToken = body.data.accessToken;
-
+  const body = await apiClient.post(AuthApi.signin, data, {
+    withCredentials: true,
+  });
+  setAuthorizationHeader(body.data.accessToken)
   return body;
 }
 
 export const postLogout = (data?: any) => {
   return apiClient.post(AuthApi.logout, data).then(() => {
-    accessToken = '';
+    setAuthorizationHeader('')
+    Cookies.remove('RefreshToken')
   })
 }
 
-export const postRefresh = async (data?: any, opts?: any) => {
-  const body = await apiClient.post(AuthApi.refresh, data, opts);
-  accessToken = body.data.accessToken;
-  console.log(jwt.decode(accessToken));
+export const postRefresh = async (data?: any, config?: any) => {
+  const body = await apiClient.post(AuthApi.refresh, data, config || { withCredentials: true });
+  setAuthorizationHeader(body.data.accessToken)
   return body;
 }
 
@@ -67,7 +80,7 @@ export const getProtected = () => {
   return apiClient.get(AuthApi.protected)
 }
 
-export const getSignUpGithub = () => {
-  return apiClient.get(AuthApi.github, {
+export const getUser = () => {
+  return apiClient.get(AuthApi.user, {
   })
 }

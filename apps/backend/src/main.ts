@@ -15,8 +15,7 @@ async function bootstrap() {
 
   app.enableCors({
     credentials: true,
-    origin: [process.env.CORS_HOST, 'http://jwt:3000'],
-    methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS',
+    origin: [process.env.CORS_HOST],
   });
 
   // app.use(

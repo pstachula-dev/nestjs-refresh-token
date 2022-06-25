@@ -14,7 +14,6 @@
     "cookie": "0.5.0",
     "nookies": "2.5.2",
     "next": "12.1.6",
-    "next-auth": "^4.5.0",
     "react": "18.2.0",
     "prisma": "^3.15.2",
     "@prisma/client": "^3.15.2",

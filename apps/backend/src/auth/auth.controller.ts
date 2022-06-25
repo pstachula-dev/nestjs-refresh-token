@@ -9,6 +9,7 @@ import {
   Res,
   Get,
   Header,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { randomUUID } from 'crypto';
@@ -33,12 +34,6 @@ const authCookieOptions: CookieOptions = {
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
-
-  @Get('user')
-  @HttpCode(HttpStatus.OK)
-  async getGithub(@Req() req: Request) {
-    return this.authService.getUser();
-  }
 
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))

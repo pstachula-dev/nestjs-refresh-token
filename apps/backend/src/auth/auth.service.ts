@@ -97,7 +97,7 @@ export class AuthService {
       this.jwtService.sign(
         { sub: userId, email },
         {
-          expiresIn: '15m',
+          expiresIn: '10s',
           secret: this.configService.get('ACCESS_TOKEN_SECRET'),
         },
       ),
