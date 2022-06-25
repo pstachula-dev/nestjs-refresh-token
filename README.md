@@ -4,9 +4,7 @@
 
 ### Features
 - JWT with refresh token rotation
-- SSO github
 - CSRF and XSS protection
-- communication FE <-> BE
 
 ## How to run:
 
