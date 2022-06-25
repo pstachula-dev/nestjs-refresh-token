@@ -57,7 +57,10 @@ MyApp.getInitialProps = async (context: AppContext) => {
         },
       });
       const { refreshToken, accessToken } = res?.data || {};
-      nookies.set(context.ctx, "RefreshToken", refreshToken);
+      nookies.set(context.ctx, "RefreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+      });
       propsData.accessToken = accessToken;
       propsData.isAuth = !!accessToken;
       propsData.user = jsonwebtoken.decode(refreshToken);

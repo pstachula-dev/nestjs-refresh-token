@@ -1,5 +1,4 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
-import Cookies from "js-cookie";
 
 const enum AuthApi {
   signin = "/auth/signin",
@@ -77,7 +76,6 @@ export const postSignIn = async (data?: UserPayload) => {
 export const postLogout = () => {
   return apiClient.post(AuthApi.logout).then(() => {
     setAuthorizationHeader("");
-    Cookies.remove("RefreshToken");
   });
 };
 

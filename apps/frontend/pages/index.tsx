@@ -24,7 +24,6 @@ const Home: NextPage<{ user: User | null; isAuth: boolean }> = ({ isAuth }) => {
   const [state, setState] = useState<string[]>([]);
   const [isAuthData, setIsAuth] = useState<boolean>(!!isAuth);
   const ctx = useContext(SessionContext);
-  console.log(ctx);
 
   return (
     <div className={styles.container}>
