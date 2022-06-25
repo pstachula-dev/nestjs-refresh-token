@@ -33,25 +33,6 @@ const authCookieOptions: CookieOptions = {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  // TODO:
-  // @Get('github/callback')
-  // @UseGuards(AuthGuard('github'))
-  // async getGithubCallback(
-  //   @Req() req: Request,
-  //   @Res({ passthrough: true }) res: Response,
-  // ) {
-  //   const profile = req.user['profile'];
-
-  //   const tokens = await this.authService.signupLocal({
-  //     email: profile.emails.at(0).value,
-  //     password: await argon2.hash(randomUUID()),
-  //   });
-
-  //   res.cookie('RefreshToken', tokens['refreshToken'], authCookieOptions);
-
-  //   return res.redirect('http://localhost:3000');
-  // }
-
   @Get('csrf')
   @HttpCode(HttpStatus.OK)
   async getCSRF() {
